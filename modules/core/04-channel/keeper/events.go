@@ -52,11 +52,15 @@ func EmitChannelOpenTryEvent(ctx sdk.Context, portID string, channelID string, c
 	})
 }
 
-// EmitChannelOpenAckEvent emits a channel open acknowledge event
+// EmitChannelOpenAckEvent emits a channel open acknowledge or pending event
 func EmitChannelOpenAckEvent(ctx sdk.Context, portID string, channelID string, channel types.Channel) {
+	eventType := types.EventTypeChannelOpenAck
+	if channel.State == types.ACK_PENDING {
+		eventType = types.EventTypeChannelOpenAckPending
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeChannelOpenAck,
+			eventType,
 			sdk.NewAttribute(types.AttributeKeyPortID, portID),
 			sdk.NewAttribute(types.AttributeKeyChannelID, channelID),
 			sdk.NewAttribute(types.AttributeCounterpartyPortID, channel.Counterparty.PortId),
@@ -70,11 +74,15 @@ func EmitChannelOpenAckEvent(ctx sdk.Context, portID string, channelID string, c
 	})
 }
 
-// EmitChannelOpenConfirmEvent emits a channel open confirm event
+// EmitChannelOpenConfirmEvent emits a channel open confirm or pending event
 func EmitChannelOpenConfirmEvent(ctx sdk.Context, portID string, channelID string, channel types.Channel) {
+	eventType := types.EventTypeChannelOpenConfirm
+	if channel.State == types.CONFIRM_PENDING {
+		eventType = types.EventTypeChannelOpenConfirmPending
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeChannelOpenConfirm,
+			eventType,
 			sdk.NewAttribute(types.AttributeKeyPortID, portID),
 			sdk.NewAttribute(types.AttributeKeyChannelID, channelID),
 			sdk.NewAttribute(types.AttributeCounterpartyPortID, channel.Counterparty.PortId),

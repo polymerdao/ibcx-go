@@ -66,8 +66,17 @@ enum State {
   // packets.
   STATE_CLOSED = 4 [(gogoproto.enumvalue_customname) = "CLOSED"];
   // A channel has been forced closed due to a frozen client in the connection
-	// path.
+  // path.
   STATE_FROZEN = 5 [(gogoproto.enumvalue_customname) = "FROZEN"];
+  // A channel has acknowledged the handshake step on the counterparty chain, but not yet confirmed with a virtual
+  // chain. Virtual channel end ONLY.
+  STATE_TRY_PENDING = 6 [(gogoproto.enumvalue_customname) = "TRY_PENDING"];
+  // A channel has finished the ChanOpenAck handshake step on chain A, but not yet confirmed with the corresponding
+  // virtual chain. Virtual channel end ONLY.
+  STATE_ACK_PENDING = 7 [(gogoproto.enumvalue_customname) = "ACK_PENDING"];
+  // A channel has finished the ChanOpenConfirm handshake step on chain B, but not yet confirmed with the corresponding
+  // virtual chain. Virtual channel end ONLY.
+  STATE_CONFIRM_PENDING = 8 [(gogoproto.enumvalue_customname) = "CONFIRM_PENDING"];
 }
 
 // Order defines if a channel is ORDERED or UNORDERED

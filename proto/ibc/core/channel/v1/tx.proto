@@ -5,7 +5,6 @@ package ibc.core.channel.v1;
 option go_package = "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
 import "ibc/core/client/v1/client.proto";
 import "ibc/core/channel/v1/channel.proto";
 import "ibc/core/commitment/v1/commitment.proto";
@@ -273,9 +272,9 @@ message MultihopProof {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
-  bytes proof = 2;
-	bytes value = 3;
-	ibc.core.commitment.v1.MerklePath prefixed_key = 4;
+  bytes                             proof        = 2;
+  bytes                             value        = 3;
+  ibc.core.commitment.v1.MerklePath prefixed_key = 4;
 }
 
 // MsgMultihopProofs holds the proof information for each intermediary hop for a multihop message
@@ -283,8 +282,8 @@ message MsgMultihopProofs {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
-  uint32 key_proof_index                   = 1;
-  MultihopProof key_proof                  = 2;
+  uint32                 key_proof_index   = 1;
+  MultihopProof          key_proof         = 2;
   repeated MultihopProof connection_proofs = 3;
   repeated MultihopProof consensus_proofs  = 4;
 }

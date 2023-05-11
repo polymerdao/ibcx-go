@@ -29,11 +29,15 @@ func EmitChannelOpenInitEvent(ctx sdk.Context, portID string, channelID string, 
 	})
 }
 
-// EmitChannelOpenTryEvent emits a channel open try event
+// EmitChannelOpenTryEvent emits a channel open try or pending event
 func EmitChannelOpenTryEvent(ctx sdk.Context, portID string, channelID string, channel types.Channel) {
+	eventType := types.EventTypeChannelOpenTry
+	if channel.State == types.TRY_PENDING {
+		eventType = types.EventTypeChannelOpenTryPending
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeChannelOpenTry,
+			eventType,
 			sdk.NewAttribute(types.AttributeKeyPortID, portID),
 			sdk.NewAttribute(types.AttributeKeyChannelID, channelID),
 			sdk.NewAttribute(types.AttributeCounterpartyPortID, channel.Counterparty.PortId),

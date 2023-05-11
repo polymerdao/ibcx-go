@@ -279,7 +279,16 @@ func (k Keeper) WriteOpenTryChannel(
 	k.SetNextSequenceRecv(ctx, portID, channelID, 1)
 	k.SetNextSequenceAck(ctx, portID, channelID, 1)
 
-	channel := types.NewChannel(types.TRYOPEN, order, counterparty, connectionHops, version)
+	// set channel state depending on if last connection is virtual or not
+	isVirtual, _ := k.IsVirtualConnection(ctx, connectionHops[len(connectionHops)-1])
+	var channelState types.State
+	if isVirtual {
+		channelState = types.TRY_PENDING
+	} else {
+		channelState = types.TRYOPEN
+	}
+
+	channel := types.NewChannel(channelState, order, counterparty, connectionHops, version)
 
 	k.SetChannel(ctx, portID, channelID, channel)
 

@@ -25,6 +25,15 @@ const (
 	// LocalhostClientID is the sentinel client ID for the localhost client.
 	LocalhostClientID string = Localhost
 
+	// Polymer is the polymer light-client type
+	Polymer string = "polymer"
+
+	// PolymerClientID is the client ID for the singleton Polymer client
+	PolymerClientID = "polymer-0"
+
+	// Virtual is the virtual light-client type
+	Virtual string = "virtual"
+
 	// Active is a status type of a client. An active client is allowed to be used.
 	Active Status = "Active"
 

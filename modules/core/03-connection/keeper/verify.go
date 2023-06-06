@@ -1,3 +1,5 @@
+//go:build !noproof
+
 package keeper
 
 import (

@@ -370,8 +370,10 @@ func NewSimApp(
 
 	// IBC Keepers
 
+	// Must use VIBC's simapp for a valid VibcKeeper reference in testing
+	// Regular non-virtual IBC tests should still pass
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper, nil,
 	)
 
 	// register the proposal types

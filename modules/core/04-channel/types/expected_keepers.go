@@ -96,3 +96,9 @@ type ConnectionKeeper interface {
 type PortKeeper interface {
 	Authenticate(ctx sdk.Context, key *capabilitytypes.Capability, portID string) bool
 }
+
+// VibcKeeper is the expected keeper interface for the virtual ibc module
+type VibcKeeper interface {
+	// Ensure a virtual port is bound to the vibc module
+	EnsurePortBound(ctx sdk.Context, portID string) error
+}

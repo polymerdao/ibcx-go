@@ -20,7 +20,8 @@ This files contains tx msg endpoint methods that override the default IBC behavi
 func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChannelOpenInit) (*channeltypes.MsgChannelOpenInitResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// Ensure the first connection is not virtual
+	// Ensure the first connection is not virtual; because ChannelOpenInit for virtual channel must go through
+	// VIBC.OpenIBCChannel endpoint
 	if isVirtual, connEnd := k.ChannelKeeper.IsVirtualConnection(ctx, msg.Channel.ConnectionHops[0]); isVirtual {
 		return nil, sdkerrors.Wrapf(connectiontypes.ErrInvalidConnection, "ChanelOpenInit can only be invoked directly on a non-virtual connection, connection: %v", connEnd)
 	}

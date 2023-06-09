@@ -214,6 +214,13 @@ func (k Keeper) ChannelOpenInitUnchecked(goCtx context.Context, msg *channeltype
 func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	// auto register virtual port if connection is virtual
+	if isVirtual, _ := k.ChannelKeeper.IsVirtualConnection(ctx, msg.Channel.ConnectionHops[0]); isVirtual {
+		if err := k.ChannelKeeper.VibcKeeper.EnsurePortBound(ctx, msg.PortId); err != nil {
+			return nil, err
+		}
+	}
+
 	// Lookup module by port capability
 	module, portCap, err := k.PortKeeper.LookupModuleByPort(ctx, msg.PortId)
 	if err != nil {

@@ -16,6 +16,11 @@ func (k Keeper) IsVirtualConnection(ctx sdk.Context, connectionID string) (bool,
 	if !found {
 		return false, nil
 	}
+	return k.IsVirtualConnectionEnd(ctx, &connection), &connection
+}
+
+// IsVirtualConnectionEnd determines if the connection end is virtual
+func (k Keeper) IsVirtualConnectionEnd(_ sdk.Context, connectionEnd *connectiontypes.ConnectionEnd) bool {
 	// a virtual connection can ONLY be created with a Polymer client and a virtual client on the Polymer Chain
-	return connection.ClientId == exported.PolymerClientID || connection.Counterparty.ClientId == exported.PolymerClientID, &connection
+	return connectionEnd.ClientId == exported.PolymerClientID || connectionEnd.Counterparty.ClientId == exported.PolymerClientID
 }

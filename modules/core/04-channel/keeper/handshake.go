@@ -279,8 +279,8 @@ func (k Keeper) WriteOpenTryChannel(
 	k.SetNextSequenceRecv(ctx, portID, channelID, 1)
 	k.SetNextSequenceAck(ctx, portID, channelID, 1)
 
-	// set channel state to TRY_PENDING if the last connection hop is virtual; otherwise, set it to TRYOPEN
-	isVirtual, _ := k.IsVirtualConnection(ctx, connectionHops[len(connectionHops)-1])
+	// set channel state to TRY_PENDING if the first connection hop is virtual; otherwise, set it to TRYOPEN
+	isVirtual, _ := k.IsVirtualConnection(ctx, connectionHops[0])
 	var channelState types.State = types.TRYOPEN
 	if isVirtual {
 		channelState = types.TRY_PENDING
@@ -412,8 +412,8 @@ func (k Keeper) WriteOpenAckChannel(
 		)
 	}
 
-	// set channel state to ACK_PENDING if last connection is virtual; otherwise, set it to OPEN
-	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[len(channel.ConnectionHops)-1])
+	// set channel state to ACK_PENDING if the first connection is virtual; otherwise, set it to OPEN
+	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[0])
 	var channelState types.State = types.OPEN
 	if isVirtual {
 		channelState = types.ACK_PENDING
@@ -541,8 +541,8 @@ func (k Keeper) WriteOpenConfirmChannel(
 		)
 	}
 
-	// set channel state to CONFIRM_PENDING if last connection is virtual; otherwise, set it to OPEN
-	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[len(channel.ConnectionHops)-1])
+	// set channel state to CONFIRM_PENDING if the first connection is virtual; otherwise, set it to OPEN
+	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[0])
 	var channelState types.State = types.OPEN
 	if isVirtual {
 		channelState = types.CONFIRM_PENDING

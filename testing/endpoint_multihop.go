@@ -231,7 +231,7 @@ func (ep *EndpointM) SetChannelClosed() error {
 // ie. self's client state is propogated from the counterparty chain following the multihop channel path.
 // This should be called on the chain that's about to receive a Msg with a proof.
 func (ep *EndpointM) UpdateAllClients() error {
-	return ep.Counterparty.mChanPath.UpdateClient()
+	return ep.mChanPath.UpdateClient()
 }
 
 // GetConnectionHops returns the connection hops for the multihop channel.

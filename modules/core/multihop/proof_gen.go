@@ -30,7 +30,7 @@ type Endpoint interface {
 	// Returns the proof of the `key`` at `height` within the ibc module store.
 	QueryProofAtHeight(key []byte, height int64) ([]byte, clienttypes.Height, error)
 	GetMerklePath(path string) (commitmenttypes.MerklePath, error)
-	// UpdateClient updates the clientState of counterparty chain's header
+	// UpdateClient updates the current endpoint's clientState using counterparty chain's header
 	UpdateClient() error
 	Counterparty() Endpoint
 }
@@ -54,8 +54,14 @@ func NewChanPath(paths []*Path) ChanPath {
 
 // UpdateClient updates the clientState{AB, BC, .. YZ} so chainA's consensusState is propogated to chainZ.
 func (p ChanPath) UpdateClient() error {
-	for _, path := range p {
-		if err := path.EndpointB.UpdateClient(); err != nil {
+	// for _, path := range p {
+	// 	if err := path.EndpointB.UpdateClient(); err != nil {
+	// 		return err
+	// 	}
+	// }
+	// travese from the last path to the first path
+	for i := len(p) - 1; i >= 0; i-- {
+		if err := p[i].EndpointA.UpdateClient(); err != nil {
 			return err
 		}
 	}

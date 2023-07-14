@@ -53,4 +53,7 @@ var (
 	)
 	ErrMultihopProofGeneration   = sdkerrors.Register(SubModuleName, 28, "multihop proof generation failed")
 	ErrMultihopProofVerification = sdkerrors.Register(SubModuleName, 29, "multihop proof verification failed")
+
+	// Virtual IBC errors
+	ErrPacketAlreadyExists = sdkerrors.Register(SubModuleName, 30, "packet already exists")
 )

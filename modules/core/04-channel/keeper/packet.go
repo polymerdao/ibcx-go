@@ -238,7 +238,14 @@ func (k Keeper) RecvPacket(
 		}
 	}
 
-	switch channel.Ordering {
+	// VIBC:
+	//  treat ordered virtual channel as unordered because packet order is enforced by the virtual chain's IBC CoreSC
+	var channelOrdering = channel.Ordering
+	if k.IsVirtualConnectionEnd(ctx, &connectionEnd) {
+		channelOrdering = types.UNORDERED
+	}
+
+	switch channelOrdering {
 	case types.UNORDERED:
 		// check if the packet receipt has been received already for unordered channels
 		_, found := k.GetPacketReceipt(ctx, packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
@@ -502,7 +509,8 @@ func (k Keeper) AcknowledgePacket(
 	}
 
 	// assert packets acknowledged in order
-	if channel.Ordering == types.ORDERED {
+	// but only when the channel is not a virtual channel
+	if channel.Ordering == types.ORDERED && !k.IsVirtualConnectionEnd(ctx, &connectionEnd) {
 		nextSequenceAck, found := k.GetNextSequenceAck(ctx, packet.GetSourcePort(), packet.GetSourceChannel())
 		if !found {
 			return sdkerrors.Wrapf(

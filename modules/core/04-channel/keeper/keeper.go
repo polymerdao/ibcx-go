@@ -194,6 +194,30 @@ func (k Keeper) SetPacketReceipt(ctx sdk.Context, portID, channelID string, sequ
 	store.Set(host.PacketReceiptKey(portID, channelID, sequence), []byte{byte(1)})
 }
 
+// DeletePacketReceipt deletes a packet receipt from the store
+// This can only be done when passing capability authentication
+func (k Keeper) DeletePacketReceipt(
+	ctx sdk.Context,
+	chanCap *capabilitytypes.Capability,
+	portID string,
+	channelID string,
+	sequence uint64,
+) error {
+	// Authenticate capability to ensure caller has authority to receive packet on this channel
+	capName := host.ChannelCapabilityPath(portID, channelID)
+	if !k.scopedKeeper.AuthenticateCapability(ctx, chanCap, capName) {
+		return sdkerrors.Wrapf(
+			types.ErrInvalidChannelCapability,
+			"channel capability failed authentication for capability name %s", capName,
+		)
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(host.PacketReceiptKey(portID, channelID, sequence))
+
+	return nil
+}
+
 // GetPacketCommitment gets the packet commitment hash from the store
 func (k Keeper) GetPacketCommitment(ctx sdk.Context, portID, channelID string, sequence uint64) []byte {
 	store := ctx.KVStore(k.storeKey)

@@ -116,9 +116,16 @@ func EmitChannelCloseInitEvent(ctx sdk.Context, portID string, channelID string,
 
 // EmitChannelCloseConfirmEvent emits a channel close confirm event
 func EmitChannelCloseConfirmEvent(ctx sdk.Context, portID string, channelID string, channel types.Channel) {
+	var eventType string
+	if channel.State == types.CLOSE_CONFIRM_PENDING {
+		eventType = types.EventTypeChannelCloseConfirmPending
+	} else {
+		eventType = types.EventTypeChannelCloseConfirm
+	}
+
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeChannelCloseConfirm,
+			eventType,
 			sdk.NewAttribute(types.AttributeKeyPortID, portID),
 			sdk.NewAttribute(types.AttributeKeyChannelID, channelID),
 			sdk.NewAttribute(types.AttributeCounterpartyPortID, channel.Counterparty.PortId),

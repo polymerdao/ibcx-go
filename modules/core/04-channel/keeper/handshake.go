@@ -651,8 +651,15 @@ func (k Keeper) ChanCloseConfirm(
 		return sdkerrors.Wrapf(types.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)
 	}
 
-	if channel.State == types.CLOSED {
-		return sdkerrors.Wrap(types.ErrInvalidChannelState, "channel is already CLOSED")
+	if channel.State == types.CLOSED || channel.State == types.CLOSE_CONFIRM_PENDING {
+		var sState string
+		if channel.State == types.CLOSED {
+			sState = "CLOSED"
+		} else {
+			sState = "CLOSE_CONFIRM_PENDING"
+		}
+
+		return sdkerrors.Wrapf(types.ErrInvalidChannelState, "channel is already %s", sState)
 	}
 
 	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, channel.ConnectionHops[len(channel.ConnectionHops)-1])
@@ -721,7 +728,13 @@ func (k Keeper) ChanCloseConfirm(
 		telemetry.IncrCounter(1, "ibc", "channel", "close-confirm")
 	}()
 
-	channel.State = types.CLOSED
+	// Set channel state to CLOSE_CONFIRM_PENDING if the first connection is virtual; otherwise, set it to CLOSED
+	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[0])
+	if isVirtual {
+		channel.State = types.CLOSE_CONFIRM_PENDING
+	} else {
+		channel.State = types.CLOSED
+	}
 	k.SetChannel(ctx, portID, channelID, channel)
 
 	EmitChannelCloseConfirmEvent(ctx, portID, channelID, channel)

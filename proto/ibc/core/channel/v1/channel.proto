@@ -77,6 +77,9 @@ enum State {
   // A channel has finished the ChanOpenConfirm handshake step on chain B, but not yet confirmed with the corresponding
   // virtual chain. Virtual channel end ONLY.
   STATE_CONFIRM_PENDING = 8 [(gogoproto.enumvalue_customname) = "CONFIRM_PENDING"];
+  // A channel has finished the ChanCloseConfirm step on chainB, but not yet confirmed with the corresponding
+  // virtual chain. Virtual channel end ONLY.
+  STATE_CLOSE_CONFIRM_PENDING = 9 [(gogoproto.enumvalue_customname) = "CLOSE_CONFIRM_PENDING"];
 }
 
 // Order defines if a channel is ORDERED or UNORDERED

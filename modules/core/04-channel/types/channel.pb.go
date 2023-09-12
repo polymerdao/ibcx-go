@@ -53,6 +53,9 @@ const (
 	// A channel has finished the ChanOpenConfirm handshake step on chain B, but not yet confirmed with the corresponding
 	// virtual chain. Virtual channel end ONLY.
 	CONFIRM_PENDING State = 8
+	// A channel has finished the ChanCloseConfirm step on chainB, but not yet confirmed with the corresponding
+	// virtual chain. Virtual channel end ONLY.
+	CLOSE_CONFIRM_PENDING State = 9
 )
 
 var State_name = map[int32]string{

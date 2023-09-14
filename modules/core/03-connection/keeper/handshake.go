@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -23,6 +26,15 @@ func (k Keeper) ConnOpenInit(
 	version *types.Version,
 	delayPeriod uint64,
 ) (string, error) {
+	{
+		bs, err := json.Marshal(counterparty)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("zf debug - Keeper.ConnOpenInit - cp1 clientID: %s, counterparty: %s\n", clientID, string(bs))
+	}
+
 	versions := types.GetCompatibleVersions()
 	if version != nil {
 		if !types.IsSupportedVersion(types.GetCompatibleVersions(), version) {
@@ -80,6 +92,15 @@ func (k Keeper) ConnOpenTry(
 	proofHeight exported.Height, // height at which relayer constructs proof of A storing connectionEnd in state
 	consensusHeight exported.Height, // latest height of chain B which chain A has stored in its chain B client
 ) (string, error) {
+	{
+		bs, err := json.Marshal(counterparty)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("zf debug - Keeper.ConnOpenTry - cp1 clientID: %s, counterparty: %s\n", clientID, string(bs))
+	}
+
 	// generate a new connection
 	connectionID := k.GenerateConnectionIdentifier(ctx)
 
@@ -174,6 +195,8 @@ func (k Keeper) ConnOpenAck(
 	proofHeight exported.Height, // height that relayer constructed proofTry
 	consensusHeight exported.Height, // latest height of chainA that chainB has stored on its chainA client
 ) error {
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp1 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
+
 	// check that the consensus height the counterparty chain is using to store a representation
 	// of this chain's consensus state is at a height in the past
 	selfHeight := clienttypes.GetSelfHeight(ctx)
@@ -190,6 +213,8 @@ func (k Keeper) ConnOpenAck(
 		return sdkerrors.Wrap(types.ErrConnectionNotFound, connectionID)
 	}
 
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp2 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
+
 	// verify the previously set connection state
 	if connection.State != types.INIT {
 		return sdkerrors.Wrapf(
@@ -198,13 +223,16 @@ func (k Keeper) ConnOpenAck(
 		)
 	}
 
-	// ensure selected version is supported
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp3 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
+
 	if !types.IsSupportedVersion(types.ProtoVersionsToExported(connection.Versions), version) {
 		return sdkerrors.Wrapf(
 			types.ErrInvalidConnectionState,
 			"the counterparty selected version %s is not supported by versions selected on INIT", version,
 		)
 	}
+
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp4 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
 
 	// validate client parameters of a chainA client stored on chainB
 	if err := k.clientKeeper.ValidateSelfClient(ctx, clientState); err != nil {
@@ -217,6 +245,8 @@ func (k Keeper) ConnOpenAck(
 		return sdkerrors.Wrapf(err, "self consensus state not found for height %s", consensusHeight.String())
 	}
 
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp5 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
+
 	prefix := k.GetCommitmentPrefix()
 	expectedCounterparty := types.NewCounterparty(connection.ClientId, connectionID, commitmenttypes.NewMerklePrefix(prefix.Bytes()))
 	expectedConnection := types.NewConnectionEnd(types.TRYOPEN, connection.Counterparty.ClientId, expectedCounterparty, []*types.Version{version}, connection.DelayPeriod)
@@ -226,8 +256,11 @@ func (k Keeper) ConnOpenAck(
 		ctx, connection, proofHeight, proofTry, counterpartyConnectionID,
 		expectedConnection,
 	); err != nil {
+		fmt.Printf("zf debug - Keeper.ConnOpenAck - cp5.1 error verifying connection state, connectionID: %s, counterpartyConnectionID: %s, err: %v\n", connectionID, counterpartyConnectionID, err)
 		return err
 	}
+
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp6 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
 
 	// Check that ChainB stored the clientState provided in the msg
 	if err := k.VerifyClientState(ctx, connection, proofHeight, proofClient, clientState); err != nil {
@@ -240,6 +273,8 @@ func (k Keeper) ConnOpenAck(
 	); err != nil {
 		return err
 	}
+
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp7 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
 
 	k.Logger(ctx).Info("connection state updated", "connection-id", connectionID, "previous-state", "INIT", "new-state", "OPEN")
 
@@ -255,6 +290,8 @@ func (k Keeper) ConnOpenAck(
 
 	EmitConnectionOpenAckEvent(ctx, connectionID, connection)
 
+	fmt.Printf("zf debug - Keeper.ConnOpenAck - cp8 connectionID: %s, counterpartyConnectionID: %s\n", connectionID, counterpartyConnectionID)
+
 	return nil
 }
 
@@ -268,6 +305,8 @@ func (k Keeper) ConnOpenConfirm(
 	proofAck []byte, // proof that connection opened on ChainA during ConnOpenAck
 	proofHeight exported.Height, // height that relayer constructed proofAck
 ) error {
+	fmt.Printf("zf debug - Keeper.ConnOpenConfirm - cp1 connectionID: %s\n", connectionID)
+
 	// Retrieve connection
 	connection, found := k.GetConnection(ctx, connectionID)
 	if !found {

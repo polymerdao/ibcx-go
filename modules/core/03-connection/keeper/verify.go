@@ -3,8 +3,10 @@
 package keeper
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -111,6 +113,15 @@ func (k Keeper) VerifyConnectionState(
 	connectionID string,
 	counterpartyConnection exported.ConnectionI, // opposite connection
 ) error {
+	{
+		bs, err := json.Marshal(connection)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("zf debug - 03-connection.Keeper.VerifyConnectionState - cp1 connection: %s\n", string(bs))
+	}
+
 	clientID := connection.GetClientID()
 	clientState, clientStore, err := k.getClientStateAndVerificationStore(ctx, clientID)
 	if err != nil {
@@ -120,6 +131,8 @@ func (k Keeper) VerifyConnectionState(
 	if status := k.clientKeeper.GetClientStatus(ctx, clientState, clientID); status != exported.Active {
 		return sdkerrors.Wrapf(clienttypes.ErrClientNotActive, "client (%s) status is %s", clientID, status)
 	}
+
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyConnectionState - cp2\n")
 
 	merklePath := commitmenttypes.NewMerklePath(host.ConnectionPath(connectionID))
 	merklePath, err = commitmenttypes.ApplyPrefix(connection.GetCounterparty().GetPrefix(), merklePath)
@@ -135,6 +148,16 @@ func (k Keeper) VerifyConnectionState(
 	bz, err := k.cdc.Marshal(&connectionEnd)
 	if err != nil {
 		return err
+	}
+
+	{
+		v := reflect.ValueOf(clientStore)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		concreteType := v.Type()
+		fmt.Printf("zf debug - 03-connection.Keeper.VerifyConnectionState - cp3 concreate type of clientState: %s\n", concreteType)
 	}
 
 	if err := clientState.VerifyMembership(

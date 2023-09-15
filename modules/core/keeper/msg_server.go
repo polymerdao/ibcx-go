@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	metrics "github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -44,17 +45,22 @@ func (k Keeper) CreateClient(goCtx context.Context, msg *clienttypes.MsgCreateCl
 
 // UpdateClient defines a rpc handler method for MsgUpdateClient.
 func (k Keeper) UpdateClient(goCtx context.Context, msg *clienttypes.MsgUpdateClient) (*clienttypes.MsgUpdateClientResponse, error) {
+	fmt.Printf("zf debug - core.Keeper.UpdateClient - cp1\n")
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	clientMsg, err := clienttypes.UnpackClientMessage(msg.ClientMessage)
 	if err != nil {
+		fmt.Printf("zf debug - core.Keeper.UpdateClient - cp2 err: %v\n", err)
+
 		return nil, err
 	}
 
 	if err = k.ClientKeeper.UpdateClient(ctx, msg.ClientId, clientMsg); err != nil {
+		fmt.Printf("zf debug - core.Keeper.UpdateClient - cp3 err: %v\n", err)
 		return nil, err
 	}
 
+	fmt.Printf("zf debug - Keeper.UpdateClient - cp4\n")
 	return &clienttypes.MsgUpdateClientResponse{}, nil
 }
 

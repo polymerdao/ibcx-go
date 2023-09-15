@@ -1,6 +1,7 @@
 package tendermint
 
 import (
+	fmt "fmt"
 	"strings"
 	"time"
 
@@ -218,6 +219,7 @@ func (cs ClientState) VerifyMembership(
 	path exported.Path,
 	value []byte,
 ) error {
+	fmt.Printf("zf debug - ClientState.VerifyMembership - cp1 path: '%s'\n", path.String())
 	if cs.GetLatestHeight().LT(height) {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrInvalidHeight,

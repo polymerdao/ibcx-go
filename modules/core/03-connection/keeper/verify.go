@@ -29,6 +29,7 @@ func (k Keeper) VerifyClientState(
 	proof []byte,
 	clientState exported.ClientState,
 ) error {
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyClientState cp1 - real validate logic\n")
 	clientID := connection.GetClientID()
 	targetClient, clientStore, err := k.getClientStateAndVerificationStore(ctx, clientID)
 	if err != nil {

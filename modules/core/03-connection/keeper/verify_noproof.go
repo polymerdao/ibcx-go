@@ -22,6 +22,7 @@ func (k Keeper) VerifyClientState(
 	proof []byte,
 	clientState exported.ClientState,
 ) error {
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyClientState cp1 - noproof\n")
 	return nil
 }
 
@@ -35,6 +36,7 @@ func (k Keeper) VerifyClientConsensusState(
 	proof []byte,
 	consensusState exported.ConsensusState,
 ) error {
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyClientConsensusState cp1 - noproof\n")
 	return nil
 }
 
@@ -48,6 +50,7 @@ func (k Keeper) VerifyConnectionState(
 	connectionID string,
 	counterpartyConnection exported.ConnectionI, // opposite connection
 ) error {
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyConnectionState cp1 - noproof\n")
 	return nil
 }
 
@@ -62,7 +65,7 @@ func (k Keeper) VerifyChannelState(
 	channelID string,
 	channel exported.ChannelI,
 ) error {
-
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyChannelState cp1 - noproof\n")
 	return nil
 }
 
@@ -78,7 +81,7 @@ func (k Keeper) VerifyPacketCommitment(
 	sequence uint64,
 	commitmentBytes []byte,
 ) error {
-
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyPacketCommitment cp1 - noproof\n")
 	return nil
 }
 
@@ -94,7 +97,7 @@ func (k Keeper) VerifyPacketAcknowledgement(
 	sequence uint64,
 	acknowledgement []byte,
 ) error {
-
+	fmt.Printf("zf debug - 03-connection.Keeper.VerifyPacketAcknowledgement cp1 - noproof\n")
 	return nil
 }
 

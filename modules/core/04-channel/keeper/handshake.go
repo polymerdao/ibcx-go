@@ -29,6 +29,8 @@ func (k Keeper) ChanOpenInit(
 	counterparty types.Counterparty,
 	version string,
 ) (string, *capabilitytypes.Capability, error) {
+	fmt.Printf("zf debug - 04-channel.Keeper.ChanOpenInit cp1 - portID: %s\n", portID)
+
 	// connection hop length checked on msg.ValidateBasic()
 	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, connectionHops[0])
 	if !found {
@@ -133,6 +135,7 @@ func (k Keeper) ChanOpenTry(
 	proofInit []byte,
 	proofHeight exported.Height,
 ) (string, *capabilitytypes.Capability, error) {
+	fmt.Printf("zf debug - 04-channel.Keeper.ChanOpenAck cp1 - portID: %s\n", portID)
 
 	// generate a new channel
 	channelID := k.GenerateChannelIdentifier(ctx)
@@ -312,6 +315,12 @@ func (k Keeper) ChanOpenAck(
 	proofTry []byte,
 	proofHeight exported.Height,
 ) error {
+	fmt.Printf(
+		"zf debug - 04-channel.Keeper.ChanOpenAck cp1 - portID: %s, channelID: %s, counterpartyChannelID: %s\n",
+		portID,
+		channelID,
+		counterpartyChannelID,
+	)
 	channel, found := k.GetChannel(ctx, portID, channelID)
 	if !found {
 		return sdkerrors.Wrapf(types.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)
@@ -444,6 +453,12 @@ func (k Keeper) ChanOpenConfirm(
 	proofAck []byte,
 	proofHeight exported.Height,
 ) error {
+	fmt.Printf(
+		"zf debug - 04-channel.Keeper.ChanOpenConfirm cp1 - portID: %s, channelID: %s\n",
+		portID,
+		channelID,
+	)
+
 	channel, found := k.GetChannel(ctx, portID, channelID)
 	if !found {
 		return sdkerrors.Wrapf(types.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)

@@ -47,12 +47,21 @@ func ParseConnectionIDFromEvents(events sdk.Events) (string, error) {
 
 // ParseChannelIDFromEvents parses events emitted from a MsgChannelOpenInit or
 // MsgChannelOpenTry and returns the channel identifier.
-func ParseChannelIDFromEvents(events sdk.Events) (string, error) {
+func ParseChannelIDFromEvents(events sdk.Events, eventTypes ...string) (string, error) {
+	if len(eventTypes) == 0 {
+		eventTypes = []string{
+			channeltypes.EventTypeChannelOpenInit,
+			channeltypes.EventTypeChannelOpenTry,
+			channeltypes.EventTypeChannelOpenTryPending,
+		}
+	}
 	for _, ev := range events {
-		if ev.Type == channeltypes.EventTypeChannelOpenInit || ev.Type == channeltypes.EventTypeChannelOpenTry || ev.Type == channeltypes.EventTypeChannelOpenTryPending {
-			for _, attr := range ev.Attributes {
-				if attr.Key == channeltypes.AttributeKeyChannelID {
-					return attr.Value, nil
+		for _, eventType := range eventTypes {
+			if ev.Type == eventType {
+				for _, attr := range ev.Attributes {
+					if attr.Key == channeltypes.AttributeKeyChannelID {
+						return attr.Value, nil
+					}
 				}
 			}
 		}

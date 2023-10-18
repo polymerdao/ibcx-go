@@ -159,6 +159,39 @@ func (k Keeper) ChanOpenTry(
 		)
 	}
 
+	if err := k.verifyChanOpenTryProof(ctx, order, connectionHops, portID, counterparty, counterpartyVersion, proofInit, proofHeight, &connectionEnd); err != nil {
+		return "", nil, err
+	}
+
+	var (
+		capKey *capabilitytypes.Capability
+		err    error
+	)
+
+	capKey, err = k.scopedKeeper.NewCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+	if err != nil {
+		return "", nil, sdkerrors.Wrapf(
+			err,
+			"could not create channel capability for port ID %s and channel ID %s",
+			portID,
+			channelID,
+		)
+	}
+
+	return channelID, capKey, nil
+}
+
+func (k Keeper) verifyChanOpenTryProof(
+	ctx sdk.Context,
+	order types.Order,
+	connectionHops []string,
+	portID string,
+	counterparty types.Counterparty,
+	counterpartyVersion string,
+	proofInit []byte,
+	proofHeight exported.Height,
+	connectionEnd *connectiontypes.ConnectionEnd,
+) error {
 	// check version support
 	versionCheckFunc := func(connection *connectiontypes.ConnectionEnd) error {
 		getVersions := connection.GetVersions()
@@ -180,10 +213,8 @@ func (k Keeper) ChanOpenTry(
 		}
 		return nil
 	}
-
 	// handle multihop case
 	if len(connectionHops) > 1 {
-
 		kvGenerator := func(mProof *types.MsgMultihopProofs, multihopConnectionEnd *connectiontypes.ConnectionEnd) (string, []byte, error) {
 			// check version support
 			if err := versionCheckFunc(multihopConnectionEnd); err != nil {
@@ -192,7 +223,7 @@ func (k Keeper) ChanOpenTry(
 
 			key := host.ChannelPath(counterparty.PortId, counterparty.ChannelId)
 
-			counterpartyHops, err := mProof.GetCounterpartyHops(k.cdc, &connectionEnd)
+			counterpartyHops, err := mProof.GetCounterpartyHops(k.cdc, connectionEnd)
 			if err != nil {
 				return "", nil, err
 			}
@@ -216,17 +247,16 @@ func (k Keeper) ChanOpenTry(
 		if err := k.connectionKeeper.VerifyMultihopMembership(
 			ctx, connectionEnd, proofHeight, proofInit,
 			connectionHops, kvGenerator); err != nil {
-			return "", nil, err
+			return err
 		}
 
 	} else {
-
 		// determine counterparty hops
 		counterpartyHops := []string{connectionEnd.GetCounterparty().GetConnectionID()}
 
 		// check versions
-		if err := versionCheckFunc(&connectionEnd); err != nil {
-			return "", nil, err
+		if err := versionCheckFunc(connectionEnd); err != nil {
+			return err
 		}
 
 		// expectedCounterparty is the counterparty of the counterparty's channel end
@@ -241,26 +271,10 @@ func (k Keeper) ChanOpenTry(
 			ctx, connectionEnd, proofHeight, proofInit,
 			counterparty.PortId, counterparty.ChannelId, expectedChannel,
 		); err != nil {
-			return "", nil, err
+			return err
 		}
 	}
-
-	var (
-		capKey *capabilitytypes.Capability
-		err    error
-	)
-
-	capKey, err = k.scopedKeeper.NewCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
-	if err != nil {
-		return "", nil, sdkerrors.Wrapf(
-			err,
-			"could not create channel capability for port ID %s and channel ID %s",
-			portID,
-			channelID,
-		)
-	}
-
-	return channelID, capKey, nil
+	return nil
 }
 
 // WriteOpenTryChannel writes a channel which has successfully passed the OpenTry handshake step.

@@ -207,35 +207,8 @@ func (k Keeper) RecvPacket(
 		)
 	}
 
-	if len(channel.ConnectionHops) > 1 {
-
-		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
-			key := host.PacketCommitmentPath(
-				packet.GetSourcePort(),
-				packet.GetSourceChannel(),
-				packet.GetSequence(),
-			)
-			commitment := types.CommitPacket(k.cdc, packet)
-			return key, commitment, nil
-		}
-
-		if err := k.connectionKeeper.VerifyMultihopMembership(
-			ctx, connectionEnd, proofHeight, proof,
-			channel.ConnectionHops, kvGenerator); err != nil {
-			return err
-		}
-	} else {
-
-		commitment := types.CommitPacket(k.cdc, packet)
-
-		// verify that the counterparty did commit to sending this packet
-		if err := k.connectionKeeper.VerifyPacketCommitment(
-			ctx, connectionEnd, proofHeight, proof,
-			packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence(),
-			commitment,
-		); err != nil {
-			return sdkerrors.Wrap(err, "couldn't verify counterparty packet commitment")
-		}
+	if err := k.verifyRecvPacketProof(ctx, &channel, packet, &connectionEnd, proofHeight, proof); err != nil {
+		return err
 	}
 
 	// VIBC:
@@ -311,6 +284,44 @@ func (k Keeper) RecvPacket(
 	// emit an event that the relayer can query for
 	EmitRecvPacketEvent(ctx, packet, channel)
 
+	return nil
+}
+
+func (k Keeper) verifyRecvPacketProof(
+	ctx sdk.Context,
+	channel *types.Channel,
+	packet exported.PacketI,
+	connectionEnd *connectiontypes.ConnectionEnd,
+	proofHeight exported.Height,
+	proof []byte) error {
+	if len(channel.ConnectionHops) > 1 {
+		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
+			key := host.PacketCommitmentPath(
+				packet.GetSourcePort(),
+				packet.GetSourceChannel(),
+				packet.GetSequence(),
+			)
+			commitment := types.CommitPacket(k.cdc, packet)
+			return key, commitment, nil
+		}
+
+		if err := k.connectionKeeper.VerifyMultihopMembership(
+			ctx, connectionEnd, proofHeight, proof,
+			channel.ConnectionHops, kvGenerator); err != nil {
+			return err
+		}
+	} else {
+		commitment := types.CommitPacket(k.cdc, packet)
+
+		// verify that the counterparty did commit to sending this packet
+		if err := k.connectionKeeper.VerifyPacketCommitment(
+			ctx, connectionEnd, proofHeight, proof,
+			packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence(),
+			commitment,
+		); err != nil {
+			return sdkerrors.Wrap(err, "couldn't verify counterparty packet commitment")
+		}
+	}
 	return nil
 }
 
@@ -481,31 +492,8 @@ func (k Keeper) AcknowledgePacket(
 		)
 	}
 
-	if len(channel.ConnectionHops) > 1 { // verify multihop proof
-
-		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
-			key := host.PacketAcknowledgementPath(
-				packet.GetDestPort(),
-				packet.GetDestChannel(),
-				packet.GetSequence(),
-			)
-			ackCommitment := types.CommitAcknowledgement(acknowledgement)
-			return key, ackCommitment, nil
-		}
-
-		if err := k.connectionKeeper.VerifyMultihopMembership(
-			ctx, connectionEnd, proofHeight, proof,
-			channel.ConnectionHops, kvGenerator); err != nil {
-			return err
-		}
-
-	} else {
-		if err := k.connectionKeeper.VerifyPacketAcknowledgement(
-			ctx, connectionEnd, proofHeight, proof, packet.GetDestPort(), packet.GetDestChannel(),
-			packet.GetSequence(), acknowledgement,
-		); err != nil {
-			return err
-		}
+	if err := k.verifyAcknowledgePacketProof(ctx, &channel, packet, acknowledgement, &connectionEnd, proofHeight, proof); err != nil {
+		return err
 	}
 
 	// assert packets acknowledged in order
@@ -551,5 +539,40 @@ func (k Keeper) AcknowledgePacket(
 	// emit an event marking that we have processed the acknowledgement
 	EmitAcknowledgePacketEvent(ctx, packet, channel)
 
+	return nil
+}
+
+func (k Keeper) verifyAcknowledgePacketProof(
+	ctx sdk.Context,
+	channel *types.Channel,
+	packet exported.PacketI,
+	acknowledgement []byte,
+	connectionEnd *connectiontypes.ConnectionEnd,
+	proofHeight exported.Height,
+	proof []byte) error {
+	if len(channel.ConnectionHops) > 1 { // verify multihop proof
+		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
+			key := host.PacketAcknowledgementPath(
+				packet.GetDestPort(),
+				packet.GetDestChannel(),
+				packet.GetSequence(),
+			)
+			ackCommitment := types.CommitAcknowledgement(acknowledgement)
+			return key, ackCommitment, nil
+		}
+
+		if err := k.connectionKeeper.VerifyMultihopMembership(
+			ctx, connectionEnd, proofHeight, proof,
+			channel.ConnectionHops, kvGenerator); err != nil {
+			return err
+		}
+	} else {
+		if err := k.connectionKeeper.VerifyPacketAcknowledgement(
+			ctx, connectionEnd, proofHeight, proof, packet.GetDestPort(), packet.GetDestChannel(),
+			packet.GetSequence(), acknowledgement,
+		); err != nil {
+			return err
+		}
+	}
 	return nil
 }

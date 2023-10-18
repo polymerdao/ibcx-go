@@ -294,6 +294,11 @@ func (k Keeper) verifyRecvPacketProof(
 	connectionEnd *connectiontypes.ConnectionEnd,
 	proofHeight exported.Height,
 	proof []byte) error {
+	// in the virtual to virtual case we don't need to check for proofs so the rest of the code is by-passed
+	if k.IsVirtualEndToVirtualEnd(ctx, channel.ConnectionHops) {
+		return nil
+	}
+
 	if len(channel.ConnectionHops) > 1 {
 		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
 			key := host.PacketCommitmentPath(
@@ -550,6 +555,11 @@ func (k Keeper) verifyAcknowledgePacketProof(
 	connectionEnd *connectiontypes.ConnectionEnd,
 	proofHeight exported.Height,
 	proof []byte) error {
+	// in the virtual to virtual case we don't need to check for proofs so the rest of the code is by-passed
+	if k.IsVirtualEndToVirtualEnd(ctx, channel.ConnectionHops) {
+		return nil
+	}
+
 	if len(channel.ConnectionHops) > 1 { // verify multihop proof
 		kvGenerator := func(_ *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
 			key := host.PacketAcknowledgementPath(

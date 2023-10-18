@@ -24,3 +24,13 @@ func (k Keeper) IsVirtualConnectionEnd(_ sdk.Context, connectionEnd *connectiont
 	// a virtual connection can ONLY be created with a Polymer client and a virtual client on the Polymer Chain
 	return connectionEnd.ClientId == exported.PolymerClientID || connectionEnd.Counterparty.ClientId == exported.PolymerClientID
 }
+
+// Returns true in the vIBC -> vIBC scenario, i.e. both connection ends are virtual. Returns false otherwise
+func (k Keeper) IsVirtualEndToVirtualEnd(ctx sdk.Context, connectionHops []string) bool {
+	if len(connectionHops) != 2 {
+		return false
+	}
+	hop0isVirtual, _ := k.IsVirtualConnection(ctx, connectionHops[0])
+	hop1isVirtual, _ := k.IsVirtualConnection(ctx, connectionHops[1])
+	return hop0isVirtual && hop1isVirtual
+}

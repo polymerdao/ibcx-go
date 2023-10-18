@@ -192,6 +192,11 @@ func (k Keeper) verifyChanOpenTryProof(
 	proofHeight exported.Height,
 	connectionEnd *connectiontypes.ConnectionEnd,
 ) error {
+	// in the virtual to virtual case we don't need to check for proofs so the rest of the code is by-passed
+	if k.IsVirtualEndToVirtualEnd(ctx, connectionHops) {
+		return nil
+	}
+
 	// check version support
 	versionCheckFunc := func(connection *connectiontypes.ConnectionEnd) error {
 		getVersions := connection.GetVersions()
@@ -360,6 +365,11 @@ func (k Keeper) ChanOpenAck(
 		)
 	}
 
+	// in the virtual to virtual case we don't need to check for proofs so the rest of the code is by-passed
+	if k.IsVirtualEndToVirtualEnd(ctx, channel.ConnectionHops) {
+		return nil
+	}
+
 	// verify multihop proof
 	if len(channel.ConnectionHops) > 1 {
 
@@ -489,6 +499,11 @@ func (k Keeper) ChanOpenConfirm(
 			connectiontypes.ErrInvalidConnectionState,
 			"connection state is not OPEN (got %s)", connectiontypes.State(connectionEnd.GetState()).String(),
 		)
+	}
+
+	// in the virtual to virtual case we don't need to check for proofs so the rest of the code is by-passed
+	if k.IsVirtualEndToVirtualEnd(ctx, channel.ConnectionHops) {
+		return nil
 	}
 
 	// verify multihop proof or standard proof

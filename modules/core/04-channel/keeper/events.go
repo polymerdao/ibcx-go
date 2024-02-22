@@ -64,6 +64,7 @@ func EmitChannelOpenAckEvent(ctx sdk.Context, portID string, channelID string, c
 	)
 	if channel.State == types.ACK_PENDING {
 		event.Type = types.EventTypeChannelOpenAckPending
+		event = event.AppendAttributes(sdk.NewAttribute(types.AttributeVersion, channel.Version))
 	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		event,
@@ -86,6 +87,7 @@ func EmitChannelOpenConfirmEvent(ctx sdk.Context, portID string, channelID strin
 	)
 	if channel.State == types.CONFIRM_PENDING {
 		event.Type = types.EventTypeChannelOpenConfirmPending
+		event = event.AppendAttributes(sdk.NewAttribute(types.AttributeVersion, channel.Version))
 	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		event,

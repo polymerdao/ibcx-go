@@ -14,6 +14,7 @@ const (
 	AttributeVersion               = "version"
 	AttributeCounterpartyPortID    = "counterparty_port_id"
 	AttributeCounterpartyChannelID = "counterparty_channel_id"
+	AttributeOrdering              = "ordering"
 
 	EventTypeSendPacket           = "send_packet"
 	EventTypeRecvPacket           = "recv_packet"

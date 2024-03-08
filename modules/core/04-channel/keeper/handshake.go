@@ -706,13 +706,46 @@ func (k Keeper) ChanCloseConfirm(
 		)
 	}
 
+	if err := k.verifyChanCloseConfirmProof(ctx, &channel, portID, channelID, proofInit, proofHeight, &connectionEnd); err != nil {
+		return err
+	}
+
+	k.Logger(ctx).
+		Info("channel state updated", "port-id", portID, "channel-id", channelID, "previous-state", channel.State.String(), "new-state", "CLOSED")
+
+	defer func() {
+		telemetry.IncrCounter(1, "ibc", "channel", "close-confirm")
+	}()
+
+	// Set channel state to CLOSE_CONFIRM_PENDING if the first connection is virtual; otherwise, set it to CLOSED
+	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[0])
+	if isVirtual {
+		channel.State = types.CLOSE_CONFIRM_PENDING
+	} else {
+		channel.State = types.CLOSED
+	}
+	k.SetChannel(ctx, portID, channelID, channel)
+
+	EmitChannelCloseConfirmEvent(ctx, portID, channelID, channel)
+
+	return nil
+}
+
+func (k Keeper) verifyChanCloseConfirmProof(
+	ctx sdk.Context,
+	channel *types.Channel,
+	portID, channelID string,
+	proofInit []byte,
+	proofHeight exported.Height,
+	connectionEnd *connectiontypes.ConnectionEnd,
+) error {
 	// verify multihop proof
 	if len(channel.ConnectionHops) > 1 {
 
 		kvGenerator := func(mProof *types.MsgMultihopProofs, _ *connectiontypes.ConnectionEnd) (string, []byte, error) {
 			key := host.ChannelPath(channel.Counterparty.PortId, channel.Counterparty.ChannelId)
 
-			counterpartyHops, err := mProof.GetCounterpartyHops(k.cdc, &connectionEnd)
+			counterpartyHops, err := mProof.GetCounterpartyHops(k.cdc, connectionEnd)
 			if err != nil {
 				return "", nil, err
 			}
@@ -749,25 +782,6 @@ func (k Keeper) ChanCloseConfirm(
 			return err
 		}
 	}
-
-	k.Logger(ctx).
-		Info("channel state updated", "port-id", portID, "channel-id", channelID, "previous-state", channel.State.String(), "new-state", "CLOSED")
-
-	defer func() {
-		telemetry.IncrCounter(1, "ibc", "channel", "close-confirm")
-	}()
-
-	// Set channel state to CLOSE_CONFIRM_PENDING if the first connection is virtual; otherwise, set it to CLOSED
-	isVirtual, _ := k.IsVirtualConnection(ctx, channel.ConnectionHops[0])
-	if isVirtual {
-		channel.State = types.CLOSE_CONFIRM_PENDING
-	} else {
-		channel.State = types.CLOSED
-	}
-	k.SetChannel(ctx, portID, channelID, channel)
-
-	EmitChannelCloseConfirmEvent(ctx, portID, channelID, channel)
-
 	return nil
 }
 

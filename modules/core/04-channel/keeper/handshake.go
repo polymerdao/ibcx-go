@@ -691,11 +691,11 @@ func (k Keeper) ChanCloseConfirm(
 		return sdkerrors.Wrapf(types.ErrInvalidChannelState, "channel is already %s", sState)
 	}
 
-	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, channel.ConnectionHops[len(channel.ConnectionHops)-1])
+	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, channel.ConnectionHops[0])
 	if !found {
 		return sdkerrors.Wrap(
 			connectiontypes.ErrConnectionNotFound,
-			channel.ConnectionHops[len(channel.ConnectionHops)-1],
+			channel.ConnectionHops[0],
 		)
 	}
 
@@ -802,11 +802,11 @@ func (k Keeper) ChanCloseFrozen(
 		return sdkerrors.Wrap(types.ErrInvalidChannelState, "channel is already CLOSED")
 	}
 
-	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, channel.ConnectionHops[len(channel.ConnectionHops)-1])
+	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, channel.ConnectionHops[0])
 	if !found {
 		return sdkerrors.Wrap(
 			connectiontypes.ErrConnectionNotFound,
-			channel.ConnectionHops[len(channel.ConnectionHops)-1],
+			channel.ConnectionHops[0],
 		)
 	}
 

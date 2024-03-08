@@ -739,6 +739,11 @@ func (k Keeper) verifyChanCloseConfirmProof(
 	proofHeight exported.Height,
 	connectionEnd *connectiontypes.ConnectionEnd,
 ) error {
+	// in the virtual to virtual case we don't need to check for proofs
+	if k.IsVirtualEndToVirtualEnd(ctx, channel.ConnectionHops) {
+		return nil
+	}
+
 	// verify multihop proof
 	if len(channel.ConnectionHops) > 1 {
 

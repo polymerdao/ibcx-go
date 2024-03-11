@@ -211,7 +211,7 @@ func (k Keeper) ChannelOpenInitUnchecked(goCtx context.Context, msg *channeltype
 // ChannelOpenTry defines a rpc handler method for MsgChannelOpenTry.
 // ChannelOpenTry will perform 04-channel checks, route to the application
 // callback, and write an OpenTry channel into state upon successful execution.
-func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
+func (k Keeper) ChannelOpenTryUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// auto register virtual port if connection is virtual

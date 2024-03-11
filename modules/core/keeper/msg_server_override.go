@@ -17,14 +17,40 @@ This files contains tx msg endpoint methods that override the default IBC behavi
 // ChannelOpenInit defines a rpc handler method for MsgChannelOpenInit.
 // ChannelOpenInit will perform 04-channel checks, route to the application
 // callback, and write an OpenInit channel into state upon successful execution.
-func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChannelOpenInit) (*channeltypes.MsgChannelOpenInitResponse, error) {
+func (k Keeper) ChannelOpenInit(
+	goCtx context.Context,
+	msg *channeltypes.MsgChannelOpenInit,
+) (*channeltypes.MsgChannelOpenInitResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Ensure the first connection is not virtual; because ChannelOpenInit for virtual channel must go through
 	// VIBC.OpenIBCChannel endpoint
 	if isVirtual, connEnd := k.ChannelKeeper.IsVirtualConnection(ctx, msg.Channel.ConnectionHops[0]); isVirtual {
-		return nil, sdkerrors.Wrapf(connectiontypes.ErrInvalidConnection, "ChanelOpenInit can only be invoked directly on a non-virtual connection, connection: %v", connEnd)
+		return nil, sdkerrors.Wrapf(
+			connectiontypes.ErrInvalidConnection,
+			"ChanelOpenInit can only be invoked directly on a non-virtual connection, connection: %v",
+			connEnd,
+		)
 	}
 
 	return k.ChannelOpenInitUnchecked(goCtx, msg)
+}
+
+func (k Keeper) ChannelOpenTry(
+	goCtx context.Context,
+	msg *channeltypes.MsgChannelOpenTry,
+) (*channeltypes.MsgChannelOpenTryResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Ensure the first connection is not virtual; because ChannelOpenInit for virtual channel must go through
+	// VIBC.OpenIBCChannel endpoint
+	if isVirtual, connEnd := k.ChannelKeeper.IsVirtualConnection(ctx, msg.Channel.ConnectionHops[0]); isVirtual {
+		return nil, sdkerrors.Wrapf(
+			connectiontypes.ErrInvalidConnection,
+			"ChanelOpenTry can only be invoked directly on a non-virtual connection, connection: %v",
+			connEnd,
+		)
+	}
+
+	return k.ChannelOpenTryUnchecked(goCtx, msg)
 }

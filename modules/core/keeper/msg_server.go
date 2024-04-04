@@ -211,7 +211,7 @@ func (k Keeper) ChannelOpenInitUnchecked(goCtx context.Context, msg *channeltype
 // ChannelOpenTry defines a rpc handler method for MsgChannelOpenTry.
 // ChannelOpenTry will perform 04-channel checks, route to the application
 // callback, and write an OpenTry channel into state upon successful execution.
-func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
+func (k Keeper) ChannelOpenTryUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// auto register virtual port if connection is virtual
@@ -265,7 +265,7 @@ func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChann
 // ChannelOpenAck defines a rpc handler method for MsgChannelOpenAck.
 // ChannelOpenAck will perform 04-channel checks, route to the application
 // callback, and write an OpenAck channel into state upon successful execution.
-func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChannelOpenAck) (*channeltypes.MsgChannelOpenAckResponse, error) {
+func (k Keeper) ChannelOpenAckUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelOpenAck) (*channeltypes.MsgChannelOpenAckResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -307,7 +307,7 @@ func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChann
 // ChannelOpenConfirm defines a rpc handler method for MsgChannelOpenConfirm.
 // ChannelOpenConfirm will perform 04-channel checks, route to the application
 // callback, and write an OpenConfirm channel into state upon successful execution.
-func (k Keeper) ChannelOpenConfirm(goCtx context.Context, msg *channeltypes.MsgChannelOpenConfirm) (*channeltypes.MsgChannelOpenConfirmResponse, error) {
+func (k Keeper) ChannelOpenConfirmUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelOpenConfirm) (*channeltypes.MsgChannelOpenConfirmResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -345,7 +345,7 @@ func (k Keeper) ChannelOpenConfirm(goCtx context.Context, msg *channeltypes.MsgC
 }
 
 // ChannelCloseInit defines a rpc handler method for MsgChannelCloseInit.
-func (k Keeper) ChannelCloseInit(goCtx context.Context, msg *channeltypes.MsgChannelCloseInit) (*channeltypes.MsgChannelCloseInitResponse, error) {
+func (k Keeper) ChannelCloseInitUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelCloseInit) (*channeltypes.MsgChannelCloseInitResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	// Lookup module by channel capability
 	module, cap, err := k.ChannelKeeper.LookupModuleByChannel(ctx, msg.PortId, msg.ChannelId)
@@ -378,7 +378,7 @@ func (k Keeper) ChannelCloseInit(goCtx context.Context, msg *channeltypes.MsgCha
 }
 
 // ChannelCloseConfirm defines a rpc handler method for MsgChannelCloseConfirm.
-func (k Keeper) ChannelCloseConfirm(goCtx context.Context, msg *channeltypes.MsgChannelCloseConfirm) (*channeltypes.MsgChannelCloseConfirmResponse, error) {
+func (k Keeper) ChannelCloseConfirmUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelCloseConfirm) (*channeltypes.MsgChannelCloseConfirmResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -412,7 +412,7 @@ func (k Keeper) ChannelCloseConfirm(goCtx context.Context, msg *channeltypes.Msg
 }
 
 // ChannelCloseFrozen defines a rpc handler method for MsgChannelCloseFrozen.
-func (k Keeper) ChannelCloseFrozen(goCtx context.Context, msg *channeltypes.MsgChannelCloseFrozen) (*channeltypes.MsgChannelCloseFrozenResponse, error) {
+func (k Keeper) ChannelCloseFrozenUnchecked(goCtx context.Context, msg *channeltypes.MsgChannelCloseFrozen) (*channeltypes.MsgChannelCloseFrozenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -447,7 +447,7 @@ func (k Keeper) ChannelCloseFrozen(goCtx context.Context, msg *channeltypes.MsgC
 }
 
 // RecvPacket defines a rpc handler method for MsgRecvPacket.
-func (k Keeper) RecvPacket(goCtx context.Context, msg *channeltypes.MsgRecvPacket) (*channeltypes.MsgRecvPacketResponse, error) {
+func (k Keeper) RecvPacketUnchecked(goCtx context.Context, msg *channeltypes.MsgRecvPacket) (*channeltypes.MsgRecvPacketResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -679,7 +679,7 @@ func (k Keeper) TimeoutOnClose(goCtx context.Context, msg *channeltypes.MsgTimeo
 }
 
 // Acknowledgement defines a rpc handler method for MsgAcknowledgement.
-func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAcknowledgement) (*channeltypes.MsgAcknowledgementResponse, error) {
+func (k Keeper) AcknowledgementUnchecked(goCtx context.Context, msg *channeltypes.MsgAcknowledgement) (*channeltypes.MsgAcknowledgementResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)

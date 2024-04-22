@@ -32,23 +32,8 @@ func GetCmdQueryClientStates() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
 
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-
-			req := &types.QueryClientStatesRequest{
-				Pagination: pageReq,
-			}
-
-			res, err := queryClient.ClientStates(cmd.Context(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
+			return clientCtx.PrintString("The command is disabled. Use 'query polyibc client-states' instead.")
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)

@@ -25,6 +25,7 @@ const (
 	KeyNextSeqRecvPrefix       = "nextSequenceRecv"
 	KeyNextSeqAckPrefix        = "nextSequenceAck"
 	KeyPacketCommitmentPrefix  = "commitments"
+	KeyVirtualPacketPrefix     = "virtualPacket"
 	KeyPacketAckPrefix         = "acks"
 	KeyPacketReceiptPrefix     = "receipts"
 )
@@ -184,6 +185,21 @@ func PacketCommitmentPath(portID, channelID string, sequence uint64) string {
 // is stored
 func PacketCommitmentKey(portID, channelID string, sequence uint64) []byte {
 	return []byte(PacketCommitmentPath(portID, channelID, sequence))
+}
+
+// Defines the prefix for virtual packet store path.
+func VirtualPacketPrefixPath(portID, channelID string) string {
+	return fmt.Sprintf("%s/%s/%s", KeyVirtualPacketPrefix, channelPath(portID, channelID), KeySequencePrefix)
+}
+
+// Defines the virtual packet store path
+func VirtualPacketPath(portID, channelID string, sequence uint64) string {
+	return fmt.Sprintf("%s/%d", VirtualPacketPrefixPath(portID, channelID), sequence)
+}
+
+// Returns the store key of under which a virtual packet is stored
+func VirtualPacketKey(portID, channelID string, sequence uint64) []byte {
+	return []byte(VirtualPacketPath(portID, channelID, sequence))
 }
 
 // PacketCommitmentPrefixPath defines the prefix for commitments to packet data fields store path.

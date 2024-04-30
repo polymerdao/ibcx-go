@@ -242,6 +242,23 @@ func (k Keeper) deletePacketCommitment(ctx sdk.Context, portID, channelID string
 	store.Delete(host.PacketCommitmentKey(portID, channelID, sequence))
 }
 
+func (k Keeper) SetVirtualPacket(ctx sdk.Context, portID, channelID string, sequence uint64, packet types.Packet) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&packet)
+	store.Set(host.VirtualPacketKey(portID, channelID, sequence), bz)
+}
+
+func (k Keeper) GetVirtualPacket(ctx sdk.Context, portID, channelID string, sequence uint64) (types.Packet, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(host.VirtualPacketKey(portID, channelID, sequence))
+	if len(bz) == 0 {
+		return types.Packet{}, false
+	}
+	var packet types.Packet
+	k.cdc.MustUnmarshal(bz, &packet)
+	return packet, true
+}
+
 // SetPacketAcknowledgement sets the packet ack hash to the store
 func (k Keeper) SetPacketAcknowledgement(ctx sdk.Context, portID, channelID string, sequence uint64, ackHash []byte) {
 	store := ctx.KVStore(k.storeKey)

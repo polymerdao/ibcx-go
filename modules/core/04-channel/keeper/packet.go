@@ -283,6 +283,7 @@ func (k Keeper) RecvPacket(
 
 	// emit an event that the relayer can query for
 	EmitRecvPacketEvent(ctx, packet, channel)
+	k.SetVirtualPacket(ctx, packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence(), packet)
 
 	return nil
 }

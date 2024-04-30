@@ -242,9 +242,20 @@ func (k Keeper) deletePacketCommitment(ctx sdk.Context, portID, channelID string
 	store.Delete(host.PacketCommitmentKey(portID, channelID, sequence))
 }
 
-func (k Keeper) SetVirtualPacket(ctx sdk.Context, portID, channelID string, sequence uint64, packet types.Packet) {
+func (k Keeper) SetVirtualPacket(ctx sdk.Context, portID, channelID string, sequence uint64, packet exported.PacketI) {
+	timeoutHeight := packet.GetTimeoutHeight()
+	p := types.NewPacket(
+		packet.GetData(),
+		packet.GetSequence(),
+		packet.GetSourcePort(),
+		packet.GetSourceChannel(),
+		packet.GetDestPort(),
+		packet.GetDestChannel(),
+		clienttypes.NewHeight(timeoutHeight.GetRevisionNumber(), timeoutHeight.GetRevisionHeight()),
+		packet.GetTimeoutTimestamp(),
+	)
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&packet)
+	bz := k.cdc.MustMarshal(&p)
 	store.Set(host.VirtualPacketKey(portID, channelID, sequence), bz)
 }
 

@@ -253,7 +253,7 @@ func (suite KeeperTestSuite) TestGetAllGenesisClients() { //nolint:govet // this
 		expGenClients[i] = types.NewIdentifiedClientState(clientIDs[i], expClients[i])
 	}
 
-	genClients := suite.chainA.App.GetIBCKeeper().ClientKeeper.GetAllGenesisClients(suite.chainA.GetContext(), suite.chainA.App.GetIBCKeeper().ConnectionKeeper)
+	genClients := suite.chainA.App.GetIBCKeeper().ClientKeeper.GetAllGenesisClients(suite.chainA.GetContext())
 
 	suite.Require().Equal(expGenClients.Sort(), genClients)
 }
@@ -385,7 +385,7 @@ func (suite KeeperTestSuite) TestGetAllConsensusStates() { //nolint:govet // thi
 		}),
 	}.Sort()
 
-	consStates := suite.chainA.App.GetIBCKeeper().ClientKeeper.GetAllConsensusStates(suite.chainA.GetContext(), suite.chainA.App.GetIBCKeeper().ConnectionKeeper)
+	consStates := suite.chainA.App.GetIBCKeeper().ClientKeeper.GetAllConsensusStates(suite.chainA.GetContext())
 	suite.Require().Equal(expConsensusStates, consStates, "%s \n\n%s", expConsensusStates, consStates)
 }
 
@@ -452,7 +452,10 @@ func (suite KeeperTestSuite) TestIterateClientStates() { //nolint:govet // this 
 		tc := tc
 		suite.Run(tc.name, func() {
 			var clientIDs []string
-			suite.chainA.GetSimApp().IBCKeeper.ClientKeeper.IterateClientStates(suite.chainA.GetContext(), tc.prefix, func(clientID string, _ exported.ClientState) bool {
+			suite.chainA.GetSimApp().IBCKeeper.ClientKeeper.IterateClientStates(suite.chainA.GetContext(), tc.prefix, func(
+				clientID string,
+				_ exported.ClientState,
+			) bool {
 				clientIDs = append(clientIDs, clientID)
 				return false
 			})

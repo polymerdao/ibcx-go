@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	connectionkeeper "github.com/cosmos/ibc-go/v7/modules/core/03-connection/keeper"
-
 	"github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
 	"github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v7/modules/core/exported"
@@ -56,8 +54,8 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
 }
 
 // ExportGenesis returns the ibc client submodule's exported genesis.
-func ExportGenesis(ctx sdk.Context, clientKeeper keeper.Keeper, connectionKeeper connectionkeeper.Keeper) types.GenesisState {
-	genClients := clientKeeper.GetAllGenesisClients(ctx, connectionKeeper)
+func ExportGenesis(ctx sdk.Context, clientKeeper keeper.Keeper) types.GenesisState {
+	genClients := clientKeeper.GetAllGenesisClients(ctx)
 	clientsMetadata, err := clientKeeper.GetAllClientMetadata(ctx, genClients)
 	if err != nil {
 		panic(err)
@@ -65,7 +63,7 @@ func ExportGenesis(ctx sdk.Context, clientKeeper keeper.Keeper, connectionKeeper
 	return types.GenesisState{
 		Clients:          genClients,
 		ClientsMetadata:  clientsMetadata,
-		ClientsConsensus: clientKeeper.GetAllConsensusStates(ctx, connectionKeeper),
+		ClientsConsensus: clientKeeper.GetAllConsensusStates(ctx),
 		Params:           clientKeeper.GetParams(ctx),
 		// Warning: CreateLocalhost is deprecated
 		CreateLocalhost:    false,

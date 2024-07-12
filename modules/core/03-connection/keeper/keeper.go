@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
 
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
@@ -27,7 +28,12 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new IBC connection Keeper instance
-func NewKeeper(cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace, ck types.ClientKeeper) Keeper {
+func NewKeeper(
+	cdc codec.BinaryCodec,
+	key storetypes.StoreKey,
+	paramSpace paramtypes.Subspace,
+	ck types.ClientKeeper,
+) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
 		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
@@ -92,7 +98,11 @@ func (k Keeper) SetConnection(ctx sdk.Context, connectionID string, connection t
 
 // GetTimestampAtHeight returns the timestamp in nanoseconds of the consensus state at the
 // given height.
-func (k Keeper) GetTimestampAtHeight(ctx sdk.Context, connection types.ConnectionEnd, height exported.Height) (uint64, error) {
+func (k Keeper) GetTimestampAtHeight(
+	ctx sdk.Context,
+	connection types.ConnectionEnd,
+	height exported.Height,
+) (uint64, error) {
 	clientState, found := k.clientKeeper.GetClientState(ctx, connection.GetClientID())
 	if !found {
 		return 0, sdkerrors.Wrapf(
@@ -152,12 +162,9 @@ func (k Keeper) SetNextConnectionSequence(ctx sdk.Context, sequence uint64) {
 // will ignore the clients that haven't initialized a connection handshake since
 // no paths are stored.
 func (k Keeper) GetAllClientConnectionPaths(ctx sdk.Context) []types.ConnectionPaths {
-	clientIds := k.GetAllClientIds(ctx)
-
 	var allConnectionPaths []types.ConnectionPaths
-	for _, _clientId := range clientIds {
-		prefix := host.PrefixedClientStoreKey([]byte(_clientId))
-		k.clientKeeper.IterateClientStates(ctx, prefix, func(clientID string, cs exported.ClientState) bool {
+	for _, clientPrefix := range clientkeeper.ClientPrefixes {
+		k.clientKeeper.IterateClientStates(ctx, []byte(clientPrefix), func(clientID string, cs exported.ClientState) bool {
 			paths, found := k.GetClientConnectionPaths(ctx, clientID)
 			if !found {
 				// continue when connection handshake is not initialized
@@ -170,23 +177,6 @@ func (k Keeper) GetAllClientConnectionPaths(ctx sdk.Context) []types.ConnectionP
 	}
 
 	return allConnectionPaths
-}
-
-func (k Keeper) GetAllClientIds(ctx sdk.Context) []string {
-	connections := k.GetAllConnections(ctx)
-	clientIds := make([]string, 0)
-	clientIdSet := make(map[string]bool) // To avoid duplicate client IDs
-
-	for _, connection := range connections {
-		if connection.ClientId == "polymer-0" {
-			continue
-		}
-		if !clientIdSet[connection.ClientId] {
-			clientIdSet[connection.ClientId] = true
-			clientIds = append(clientIds, connection.ClientId)
-		}
-	}
-	return clientIds
 }
 
 // IterateConnections provides an iterator over all ConnectionEnd objects.

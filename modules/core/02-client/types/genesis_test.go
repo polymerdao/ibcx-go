@@ -34,7 +34,7 @@ func (suite *TypesTestSuite) TestMarshalGenesisState() {
 	err := path.EndpointA.UpdateClient()
 	suite.Require().NoError(err)
 
-	genesis := client.ExportGenesis(suite.chainA.GetContext(), suite.chainA.App.GetIBCKeeper().ClientKeeper)
+	genesis := client.ExportGenesis(suite.chainA.GetContext(), suite.chainA.App.GetIBCKeeper().ClientKeeper, suite.chainA.App.GetIBCKeeper().ConnectionKeeper)
 
 	bz, err := cdc.MarshalJSON(&genesis)
 	suite.Require().NoError(err)

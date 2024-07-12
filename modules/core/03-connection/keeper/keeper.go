@@ -152,19 +152,41 @@ func (k Keeper) SetNextConnectionSequence(ctx sdk.Context, sequence uint64) {
 // will ignore the clients that haven't initialized a connection handshake since
 // no paths are stored.
 func (k Keeper) GetAllClientConnectionPaths(ctx sdk.Context) []types.ConnectionPaths {
+	clientIds := k.GetAllClientIds(ctx)
+
 	var allConnectionPaths []types.ConnectionPaths
-	k.clientKeeper.IterateClientStates(ctx, nil, func(clientID string, cs exported.ClientState) bool {
-		paths, found := k.GetClientConnectionPaths(ctx, clientID)
-		if !found {
-			// continue when connection handshake is not initialized
+	for _, _clientId := range clientIds {
+		prefix := host.PrefixedClientStoreKey([]byte(_clientId))
+		k.clientKeeper.IterateClientStates(ctx, prefix, func(clientID string, cs exported.ClientState) bool {
+			paths, found := k.GetClientConnectionPaths(ctx, clientID)
+			if !found {
+				// continue when connection handshake is not initialized
+				return false
+			}
+			connPaths := types.NewConnectionPaths(clientID, paths)
+			allConnectionPaths = append(allConnectionPaths, connPaths)
 			return false
-		}
-		connPaths := types.NewConnectionPaths(clientID, paths)
-		allConnectionPaths = append(allConnectionPaths, connPaths)
-		return false
-	})
+		})
+	}
 
 	return allConnectionPaths
+}
+
+func (k Keeper) GetAllClientIds(ctx sdk.Context) []string {
+	connections := k.GetAllConnections(ctx)
+	clientIds := make([]string, 0)
+	clientIdSet := make(map[string]bool) // To avoid duplicate client IDs
+
+	for _, connection := range connections {
+		if connection.ClientId == "polymer-0" {
+			continue
+		}
+		if !clientIdSet[connection.ClientId] {
+			clientIdSet[connection.ClientId] = true
+			clientIds = append(clientIds, connection.ClientId)
+		}
+	}
+	return clientIds
 }
 
 // IterateConnections provides an iterator over all ConnectionEnd objects.

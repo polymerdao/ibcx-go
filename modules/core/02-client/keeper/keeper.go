@@ -14,6 +14,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	connectionkeeper "github.com/cosmos/ibc-go/v7/modules/core/03-connection/keeper"
 
 	"github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v7/modules/core/23-commitment/types"
@@ -133,9 +134,9 @@ func (k Keeper) SetNextClientSequence(ctx sdk.Context, sequence uint64) {
 // IterateConsensusStates provides an iterator over all stored consensus states.
 // objects. For each State object, cb will be called. If the cb returns true,
 // the iterator will close and stop.
-func (k Keeper) IterateConsensusStates(ctx sdk.Context, cb func(clientID string, cs types.ConsensusStateWithHeight) bool) {
+func (k Keeper) IterateConsensusStates(ctx sdk.Context, prefix []byte, cb func(clientID string, cs types.ConsensusStateWithHeight) bool) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, host.KeyClientStorePrefix)
+	iterator := sdk.KVStorePrefixIterator(store, prefix)
 
 	defer sdk.LogDeferred(ctx.Logger(), func() error { return iterator.Close() })
 	for ; iterator.Valid(); iterator.Next() {
@@ -157,12 +158,16 @@ func (k Keeper) IterateConsensusStates(ctx sdk.Context, cb func(clientID string,
 }
 
 // GetAllGenesisClients returns all the clients in state with their client ids returned as IdentifiedClientState
-func (k Keeper) GetAllGenesisClients(ctx sdk.Context) types.IdentifiedClientStates {
+func (k Keeper) GetAllGenesisClients(ctx sdk.Context, connectionKeeper connectionkeeper.Keeper) types.IdentifiedClientStates {
+	clientIds := connectionKeeper.GetAllClientIds(ctx)
+
 	var genClients types.IdentifiedClientStates
-	k.IterateClientStates(ctx, nil, func(clientID string, cs exported.ClientState) bool {
-		genClients = append(genClients, types.NewIdentifiedClientState(clientID, cs))
-		return false
-	})
+	for _, clientID := range clientIds {
+		k.IterateClientStates(ctx, []byte(clientID), func(clientID string, cs exported.ClientState) bool {
+			genClients = append(genClients, types.NewIdentifiedClientState(clientID, cs))
+			return false
+		})
+	}
 
 	return genClients.Sort()
 }
@@ -211,26 +216,30 @@ func (k Keeper) SetAllClientMetadata(ctx sdk.Context, genMetadata []types.Identi
 }
 
 // GetAllConsensusStates returns all stored client consensus states.
-func (k Keeper) GetAllConsensusStates(ctx sdk.Context) types.ClientsConsensusStates {
+func (k Keeper) GetAllConsensusStates(ctx sdk.Context, connectionKeeper connectionkeeper.Keeper) types.ClientsConsensusStates {
 	clientConsStates := make(types.ClientsConsensusStates, 0)
 	mapClientIDToConsStateIdx := make(map[string]int)
+	clientIds := connectionKeeper.GetAllClientIds(ctx)
 
-	k.IterateConsensusStates(ctx, func(clientID string, cs types.ConsensusStateWithHeight) bool {
-		idx, ok := mapClientIDToConsStateIdx[clientID]
-		if ok {
-			clientConsStates[idx].ConsensusStates = append(clientConsStates[idx].ConsensusStates, cs)
+	for _, _clientId := range clientIds {
+		prefix := host.PrefixedClientStoreKey([]byte(_clientId))
+		k.IterateConsensusStates(ctx, prefix, func(clientID string, cs types.ConsensusStateWithHeight) bool {
+			idx, ok := mapClientIDToConsStateIdx[clientID]
+			if ok {
+				clientConsStates[idx].ConsensusStates = append(clientConsStates[idx].ConsensusStates, cs)
+				return false
+			}
+
+			clientConsState := types.ClientConsensusStates{
+				ClientId:        clientID,
+				ConsensusStates: []types.ConsensusStateWithHeight{cs},
+			}
+
+			clientConsStates = append(clientConsStates, clientConsState)
+			mapClientIDToConsStateIdx[clientID] = len(clientConsStates) - 1
 			return false
-		}
-
-		clientConsState := types.ClientConsensusStates{
-			ClientId:        clientID,
-			ConsensusStates: []types.ConsensusStateWithHeight{cs},
-		}
-
-		clientConsStates = append(clientConsStates, clientConsState)
-		mapClientIDToConsStateIdx[clientID] = len(clientConsStates) - 1
-		return false
-	})
+		})
+	}
 
 	return clientConsStates.Sort()
 }

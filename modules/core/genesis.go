@@ -21,7 +21,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs *types.GenesisState) {
 // ExportGenesis returns the ibc exported genesis.
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
-		ClientGenesis:     client.ExportGenesis(ctx, k.ClientKeeper),
+		ClientGenesis:     client.ExportGenesis(ctx, k.ClientKeeper, k.ConnectionKeeper),
 		ConnectionGenesis: connection.ExportGenesis(ctx, k.ConnectionKeeper),
 		ChannelGenesis:    channel.ExportGenesis(ctx, k.ChannelKeeper),
 	}

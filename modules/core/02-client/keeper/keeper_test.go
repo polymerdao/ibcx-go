@@ -452,7 +452,10 @@ func (suite KeeperTestSuite) TestIterateClientStates() { //nolint:govet // this 
 		tc := tc
 		suite.Run(tc.name, func() {
 			var clientIDs []string
-			suite.chainA.GetSimApp().IBCKeeper.ClientKeeper.IterateClientStates(suite.chainA.GetContext(), tc.prefix, func(clientID string, _ exported.ClientState) bool {
+			suite.chainA.GetSimApp().IBCKeeper.ClientKeeper.IterateClientStates(suite.chainA.GetContext(), tc.prefix, func(
+				clientID string,
+				_ exported.ClientState,
+			) bool {
 				clientIDs = append(clientIDs, clientID)
 				return false
 			})

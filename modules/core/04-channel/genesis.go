@@ -38,10 +38,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
 // ExportGenesis returns the ibc channel submodule's exported genesis.
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) types.GenesisState {
 	return types.GenesisState{
-		Channels:            k.GetAllChannels(ctx),
-		Acknowledgements:    k.GetAllPacketAcks(ctx),
-		Commitments:         k.GetAllPacketCommitments(ctx),
-		Receipts:            k.GetAllPacketReceipts(ctx),
+		Channels: k.GetAllChannels(ctx),
+		// these operations take too much time when there are a lot of packets
+		//Acknowledgements:    k.GetAllPacketAcks(ctx),
+		//Commitments:         k.GetAllPacketCommitments(ctx),
+		//Receipts:            k.GetAllPacketReceipts(ctx),
 		SendSequences:       k.GetAllPacketSendSeqs(ctx),
 		RecvSequences:       k.GetAllPacketRecvSeqs(ctx),
 		AckSequences:        k.GetAllPacketAckSeqs(ctx),
